@@ -341,9 +341,6 @@ public class AgentManager : MonoBehaviour, ActionInvokable {
             // primary agent floating in space, then generates the house, then teleports the primary agent.
             // this will need a rework to make multi agent work as GetReachablePositions is used to position additional
             // agents, which won't work if we initialize the agent(s) before the scene exists
-            if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.StartsWith("Procedural")) {
-                throw new NotImplementedException($"Procedural scenes only support a single agent currently.");
-            }
 
             Physics.SyncTransforms();
             Vector3[] reachablePositions = primaryAgent.getReachablePositions(2.0f);
