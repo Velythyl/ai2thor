@@ -228,6 +228,8 @@ def _build(
         if elapsed // print_interval > (elapsed - sleep_time) // print_interval:
             logger.info(f"Build has been running for {elapsed:.2f} seconds.")
 
+        print("tick" if elapsed % 2 == 0 else "tock")
+
     stdout, stderr = process.communicate()
     
     if stdout:
