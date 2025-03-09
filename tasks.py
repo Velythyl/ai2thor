@@ -168,7 +168,6 @@ def _unity_path():
 
     return unity_path
 
-
 def _build(
     unity_path: str,
     arch: str,
@@ -198,10 +197,19 @@ def _build(
     full_env["UNITY_BUILD_NAME"] = target_path
 
     print(f"Running build command:\n{command}\nwith env\n{full_env}")
-    process = subprocess.Popen(command, shell=True, env=full_env)
+
+    process = subprocess.Popen(
+        command,
+        shell=True,
+        env=full_env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
 
     start = time.time()
     sleep_time = 10
+
     while True:
         time.sleep(sleep_time)  # Check for build completion every `sleep_time` seconds
 
@@ -214,11 +222,18 @@ def _build(
                 f"Timeout occurred when running command:\n{command}\nKilling the process."
             )
             os.kill(process.pid, signal.SIGKILL)
-            os.waitpid(-1, os.WNOHANG)
+            os.waitpid(process.pid, os.WNOHANG)
             return False
 
         if elapsed // print_interval > (elapsed - sleep_time) // print_interval:
             logger.info(f"Build has been running for {elapsed:.2f} seconds.")
+
+    stdout, stderr = process.communicate()
+    
+    if stdout:
+        logger.info(f"Build output:\n{stdout}")
+    if stderr:
+        logger.error(f"Build error output:\n{stderr}")
 
     logger.info(f"Exited with code {process.returncode}")
 
@@ -227,6 +242,7 @@ def _build(
         generate_build_metadata(os.path.join(project_path, build_dir, "metadata.json"))
     else:
         logger.error(f"Error occurred when running command:\n{command}")
+    
     return success
 
 
